@@ -5,7 +5,8 @@ from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.environ.get("DATA_DIR", BASE_DIR)
+DEFAULT_RENDER_DATA_DIR = "/var/data" if os.path.isdir("/var/data") else BASE_DIR
+DATA_DIR = os.environ.get("DATA_DIR", DEFAULT_RENDER_DATA_DIR)
 DB_PATH = os.environ.get("CARDS_DB_PATH", os.path.join(DATA_DIR, "cards.db"))
 LEGACY_CARDS_FILE = os.path.join(BASE_DIR, "cards.json")
 
