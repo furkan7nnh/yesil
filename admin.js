@@ -114,6 +114,7 @@ adminQuickForm.addEventListener("submit", async (event) => {
   });
 
   await saveCards();
+  renderAdminCards();
   adminQuickForm.reset();
   adminCategoryInput.value = defaultCategory;
   adminMessage.textContent = "Hizli kart eklendi.";
@@ -136,6 +137,64 @@ async function loadCards() {
     cards = response.ok ? await response.json() : [];
   } catch {
     cards = [];
+  }
+  renderAdminCards();
+}
+
+function renderAdminCards() {
+  const list = document.getElementById("adminCardList");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (!cards.length) {
+    list.innerHTML = "<p class='no-cards-msg'>Henuz kart yok.</p>";
+    return;
+  }
+
+  for (const card of cards) {
+    const item = document.createElement("div");
+    item.className = "admin-card-item";
+
+    const thumb = document.createElement("div");
+    thumb.className = "admin-card-thumb";
+    const mediaType = detectMediaType({ source: card.image, mimeType: card.mediaType || "" });
+    if (mediaType === "video") {
+      const vid = document.createElement("video");
+      vid.src = card.image;
+      vid.className = "admin-thumb-media";
+      vid.muted = true;
+      vid.preload = "metadata";
+      thumb.appendChild(vid);
+    } else {
+      const img = document.createElement("img");
+      img.src = card.image;
+      img.alt = card.title;
+      img.className = "admin-thumb-media";
+      img.addEventListener("error", () => { img.src = fallbackImage; });
+      thumb.appendChild(img);
+    }
+
+    const info = document.createElement("div");
+    info.className = "admin-card-info";
+    info.innerHTML = `<span class="admin-card-cat">${card.category}</span><span class="admin-card-title">${card.title}</span>`;
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "delete-btn";
+    delBtn.textContent = "Sil";
+    delBtn.setAttribute("aria-label", `${card.title} kartini sil`);
+    delBtn.addEventListener("click", async () => {
+      if (!confirm(`"${card.title}" kartini silmek istediginize emin misiniz?`)) return;
+      cards = cards.filter((c) => c.id !== card.id);
+      await saveCards();
+      renderAdminCards();
+      adminMessage.textContent = `"${card.title}" silindi.`;
+    });
+
+    item.appendChild(thumb);
+    item.appendChild(info);
+    item.appendChild(delBtn);
+    list.appendChild(item);
   }
 }
 
