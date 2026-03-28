@@ -59,10 +59,12 @@
           </select>
         </label>
 
-        <button id="adminQuickAddButton" type="submit">Hizli Kart Ekle</button>
+        <div class="form-actions">
+          <button id="adminQuickAddButton" type="submit">Hizli Kart Ekle</button>
+          <button id="adminDeleteMediaButton" type="button" class="danger-button">Fotograf ve Videolari Sil</button>
+        </div>
       </form>
       <p id="adminMessage" class="form-message" aria-live="polite"></p>
-
       <div class="admin-cards-section">
         <h3>Mevcut Kartlar</h3>
         <div id="adminCardList" class="admin-card-list"></div>

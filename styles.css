@@ -312,6 +312,14 @@ button:hover {
 	flex-wrap: wrap;
 }
 
+.danger-button {
+	background: linear-gradient(120deg, #8f1d1d, #b53030 60%, #d85e5e);
+}
+
+.danger-button:hover {
+	box-shadow: 0 8px 20px rgba(143, 29, 29, 0.35);
+}
+
 .cancel-btn {
 	background: #e0f2e5;
 	color: #113922;
@@ -502,6 +510,73 @@ h2 {
 	margin: 0;
 	color: rgba(24, 38, 34, 0.86);
 	line-height: 1.45;
+}
+
+
+.admin-posts {
+	margin-top: 18px;
+	padding-top: 16px;
+	border-top: 1px dashed var(--line);
+	display: grid;
+	gap: 10px;
+}
+
+.admin-posts-head {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.admin-posts-head h3 {
+	margin: 0;
+	font-family: "Fraunces", serif;
+	font-size: 1.2rem;
+}
+
+.admin-posts-list {
+	display: grid;
+	gap: 10px;
+}
+
+.admin-post-row {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	background: color-mix(in hsl, var(--card) 92%, white);
+}
+
+.admin-post-info {
+	display: grid;
+	gap: 4px;
+}
+
+.admin-post-title {
+	margin: 0;
+	font-size: 1rem;
+}
+
+.admin-post-meta {
+	margin: 0;
+	font-size: 0.85rem;
+	color: rgba(24, 38, 34, 0.76);
+}
+
+.admin-post-delete-button {
+	padding: 8px 12px;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+
+.admin-posts-empty {
+	margin: 0;
+	color: rgba(24, 38, 34, 0.8);
 }
 
 @keyframes card-in {

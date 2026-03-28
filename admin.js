@@ -12,6 +12,9 @@ const adminTitleInput = document.getElementById("adminTitle");
 const adminDescriptionInput = document.getElementById("adminDescription");
 const adminCategoryInput = document.getElementById("adminCategory");
 const adminMessage = document.getElementById("adminMessage");
+const adminDeleteMediaButton = document.getElementById("adminDeleteMediaButton");
+const adminPostsList = document.getElementById("adminPostsList");
+const adminRefreshPostsButton = document.getElementById("adminRefreshPostsButton");
 
 const adminLoginModal = document.getElementById("adminLoginModal");
 const adminLoginForm = document.getElementById("adminLoginForm");
@@ -71,6 +74,7 @@ adminLoginForm.addEventListener("submit", (event) => {
   adminLoginModal.hidden = true;
   adminPanel.hidden = false;
   adminMessage.textContent = "Admin paneli acildi.";
+  refreshAdminPosts();
 });
 
 logoutAdminButton.addEventListener("click", () => {
@@ -118,6 +122,43 @@ adminQuickForm.addEventListener("submit", async (event) => {
   adminQuickForm.reset();
   adminCategoryInput.value = defaultCategory;
   adminMessage.textContent = "Hizli kart eklendi.";
+  renderAdminPosts();
+});
+
+adminDeleteMediaButton?.addEventListener("click", async () => {
+  const confirmed = window.confirm(
+    "Tum fotograf ve videolari silmek istiyor musun? Bu islem geri alinmaz."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  adminMessage.textContent = "Medyalar siliniyor...";
+
+  await loadCards();
+  const originalCount = cards.length;
+  cards = cards.filter((card) => !hasRemovableMedia(card));
+
+  if (cards.length === originalCount) {
+    adminMessage.textContent = "Silinecek fotograf veya video bulunamadi.";
+    return;
+  }
+
+  const response = await saveCards();
+  if (!response.ok) {
+    adminMessage.textContent = "Silme islemi basarisiz oldu. Tekrar dene.";
+    return;
+  }
+
+  const removedCount = originalCount - cards.length;
+  adminMessage.textContent = `${removedCount} medya kaydi silindi.`;
+  renderAdminPosts();
+});
+
+adminRefreshPostsButton?.addEventListener("click", async () => {
+  await refreshAdminPosts();
+  adminMessage.textContent = "Gonderi listesi yenilendi.";
 });
 
 adminDescriptionInput.addEventListener("keydown", (event) => {
@@ -232,6 +273,104 @@ function detectMediaType({ source, mimeType }) {
   }
 
   return "image";
+}
+
+function hasRemovableMedia(card) {
+  const mediaType = String(card?.mediaType || "").toLowerCase();
+  if (mediaType === "image" || mediaType === "video") {
+    return true;
+  }
+
+  const source = String(card?.image || card?.media || "").trim();
+  if (!source) {
+    return false;
+  }
+
+  return detectMediaType({ source, mimeType: "" }) === "image" || detectMediaType({ source, mimeType: "" }) === "video";
+}
+
+async function refreshAdminPosts() {
+  await loadCards();
+  renderAdminPosts();
+}
+
+function renderAdminPosts() {
+  if (!adminPostsList) {
+    return;
+  }
+
+  adminPostsList.innerHTML = "";
+
+  if (!cards.length) {
+    const empty = document.createElement("p");
+    empty.className = "admin-posts-empty";
+    empty.textContent = "Henuz paylasilan gonderi yok.";
+    adminPostsList.appendChild(empty);
+    return;
+  }
+
+  for (const card of cards) {
+    const row = document.createElement("article");
+    row.className = "admin-post-row";
+
+    const info = document.createElement("div");
+    info.className = "admin-post-info";
+
+    const title = document.createElement("h4");
+    title.className = "admin-post-title";
+    title.textContent = card.title || "Basliksiz";
+
+    const meta = document.createElement("p");
+    meta.className = "admin-post-meta";
+    const mediaLabel = detectMediaType({
+      source: card.image || "",
+      mimeType: card.mediaType || "",
+    }) === "video" ? "Video" : "Fotograf";
+    meta.textContent = `${card.category || "Kategori yok"} - ${mediaLabel}`;
+
+    info.appendChild(title);
+    info.appendChild(meta);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "danger-button admin-post-delete-button";
+    removeButton.textContent = "Gonderiyi Sil";
+    removeButton.addEventListener("click", async () => {
+      await removeAdminPost(card);
+    });
+
+    row.appendChild(info);
+    row.appendChild(removeButton);
+    adminPostsList.appendChild(row);
+  }
+}
+
+async function removeAdminPost(targetCard) {
+  const confirmed = window.confirm(
+    `"${targetCard?.title || "Bu"}" gonderisini silmek istiyor musun?`
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  await loadCards();
+  const index = cards.findIndex((card) => card.id && targetCard.id && card.id === targetCard.id);
+  const fallbackIndex = index >= 0 ? index : cards.indexOf(targetCard);
+
+  if (fallbackIndex < 0) {
+    adminMessage.textContent = "Gonderi bulunamadi. Listeyi yenileyip tekrar dene.";
+    return;
+  }
+
+  cards.splice(fallbackIndex, 1);
+  const response = await saveCards();
+  if (!response.ok) {
+    adminMessage.textContent = "Gonderi silinemedi. Tekrar dene.";
+    return;
+  }
+
+  adminMessage.textContent = "Gonderi silindi.";
+  renderAdminPosts();
 }
 
 function fileToDataUrl(file) {
