@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Ani Panosu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-shape shape-1" aria-hidden="true"></div>
+  <div class="bg-shape shape-2" aria-hidden="true"></div>
+
+  <nav class="top-menu" aria-label="Site menusu">
+    <button id="menuButton" class="menu-button" type="button" aria-expanded="false" aria-controls="menuDropdown">Menu</button>
+    <div id="menuDropdown" class="menu-dropdown" hidden>
+      <a class="menu-link" href="/">Ana Sayfa</a>
+      <button id="logoutAdmin" type="button">Cikis</button>
+    </div>
+  </nav>
+
+  <main class="layout">
+    <section id="adminPanel" class="panel admin-panel" aria-label="Admin paneli hizli ekleme" hidden>
+      <div class="admin-head">
+        <h2>Admin Paneli</h2>
+        <p>Kisa yoldan resim ve bilgi eklemek icin kullan.</p>
+      </div>
+
+      <form id="adminQuickForm" class="form-grid">
+        <label>
+          <span>Resim veya Video URL</span>
+          <input id="adminImageUrl" type="url" placeholder="https://ornek.com/hizli-foto.jpg veya video.mp4" />
+        </label>
+
+        <label>
+          <span>Veya resim/video dosyasi sec</span>
+          <input id="adminImageFile" type="file" accept="image/*,video/*" />
+        </label>
+
+        <label>
+          <span>Baslik</span>
+          <input id="adminTitle" type="text" maxlength="80" placeholder="Hizli baslik" required />
+        </label>
+
+        <label>
+          <span>Bilgi</span>
+          <textarea id="adminDescription" rows="3" maxlength="300" placeholder="Hizli aciklama" required></textarea>
+        </label>
+
+        <label>
+          <span>Kategori</span>
+          <select id="adminCategory" required>
+            <option value="AT HIRSIZI MIRAC" selected>AT HIRSIZI MIRAC</option>
+            <option value="PARCALA YILMAZ">PARCALA YILMAZ</option>
+            <option value="MASKE UFUK">MASKE UFUK</option>
+            <option value="NESINE TURGUT">NESINE TURGUT</option>
+          </select>
+        </label>
+
+        <button id="adminQuickAddButton" type="submit">Hizli Kart Ekle</button>
+      </form>
+      <p id="adminMessage" class="form-message" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <div id="adminLoginModal" class="login-modal" hidden>
+    <div class="login-backdrop" aria-hidden="true"></div>
+    <section class="login-dialog" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle">
+      <h2 id="adminLoginTitle">Admin Girisi</h2>
+      <p class="login-subtitle">Parlak guvenlik ekranindan sifreyi gir.</p>
+      <form id="adminLoginForm" class="login-form">
+        <label>
+          <span>Sifre</span>
+          <input id="adminPasswordInput" type="password" autocomplete="current-password" placeholder="Sifreyi yaz" required />
+        </label>
+        <div class="login-actions">
+          <button type="submit">Giris Yap</button>
+          <a class="cancel-btn" href="/">Ana Sayfaya Don</a>
+        </div>
+        <p id="adminLoginError" class="form-message" aria-live="polite"></p>
+      </form>
+    </section>
+  </div>
+
+  <script src="admin.js?v=20260328-2"></script>
+</body>
+</html>

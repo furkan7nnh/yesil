@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ana Sayfa - Ani Panosu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-shape shape-1" aria-hidden="true"></div>
+  <div class="bg-shape shape-2" aria-hidden="true"></div>
+
+  <nav class="top-menu" aria-label="Site menusu">
+    <button id="menuButton" class="menu-button" type="button" aria-expanded="false" aria-controls="menuDropdown">Menu</button>
+    <div id="menuDropdown" class="menu-dropdown" hidden>
+      <button id="goHome" type="button">Ana Sayfa</button>
+      <a class="menu-link" href="/admin">Admin Panel</a>
+    </div>
+  </nav>
+
+  <main class="layout">
+    <section class="view-screen" aria-label="Ana sayfa">
+      <header class="hero">
+        <p class="eyebrow">Yesil Ekip Fedaileri</p>
+        <h1>Yesil Ekip Fedaileri</h1>
+        <p class="subtitle">
+          Sitede sadece fotograflar ve bilgiler gorunur. Ekleme islemi sadece admin panelinden yapilir. peygamber carpsinki lan
+        </p>
+      </header>
+
+      <section>
+        <h2>Kartlarim</h2>
+        <div class="filter-bar" aria-label="Kart filtreleri">
+          <label>
+            <span>Ara</span>
+            <input id="searchInput" type="search" placeholder="Baslik veya bilgi ara" />
+          </label>
+          <label>
+            <span>Kategoriye gore</span>
+            <select id="filterCategory">
+              <option value="all" selected>Tum kategoriler</option>
+              <option value="AT HIRSIZI MIRAC">AT HIRSIZI MIRAC</option>
+              <option value="PARCALA YILMAZ">PARCALA YILMAZ</option>
+              <option value="MASKE UFUK">MASKE UFUK</option>
+              <option value="NESINE TURGUT">NESINE TURGUT</option>
+            </select>
+          </label>
+        </div>
+        <div id="gallery" class="gallery" aria-live="polite"></div>
+      </section>
+    </section>
+  </main>
+
+  <template id="cardTemplate">
+    <article class="card">
+      <img class="card-image" alt="Kullanici ekledigi gorsel" loading="lazy" />
+      <div class="card-content">
+        <p class="card-category"></p>
+        <h3 class="card-title"></h3>
+        <p class="card-description"></p>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js?v=20260328-21"></script>
+</body>
+</html>
