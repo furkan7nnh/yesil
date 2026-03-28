@@ -3,12 +3,19 @@ import os
 import sqlite3
 from flask import Flask, request, jsonify, send_from_directory
 
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
+
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_RENDER_DATA_DIR = "/var/data" if os.path.isdir("/var/data") else BASE_DIR
 DATA_DIR = os.environ.get("DATA_DIR", DEFAULT_RENDER_DATA_DIR)
 DB_PATH = os.environ.get("CARDS_DB_PATH", os.path.join(DATA_DIR, "cards.db"))
 LEGACY_CARDS_FILE = os.path.join(BASE_DIR, "cards.json")
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+USE_POSTGRES = bool(DATABASE_URL and psycopg2)
 
 
 def resolve_db_path():
@@ -33,6 +40,10 @@ def resolve_db_path():
 RESOLVED_DB_PATH = resolve_db_path()
 
 
+def get_pg_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+
 def get_db_connection():
     db_dir = os.path.dirname(RESOLVED_DB_PATH)
     if db_dir:
@@ -42,7 +53,7 @@ def get_db_connection():
     return connection
 
 
-def init_db():
+def init_sqlite_db():
     with get_db_connection() as connection:
         connection.execute(
             """
@@ -55,17 +66,33 @@ def init_db():
         connection.commit()
 
 
+def init_postgres_db():
+    with get_pg_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS app_state (
+                    state_key TEXT PRIMARY KEY,
+                    state_value TEXT NOT NULL
+                )
+                """
+            )
+        connection.commit()
+
+
+def init_storage():
+    if USE_POSTGRES:
+        init_postgres_db()
+        return
+    init_sqlite_db()
+
+
 def migrate_legacy_cards_if_needed():
     if not os.path.exists(LEGACY_CARDS_FILE):
         return
 
-    with get_db_connection() as connection:
-        existing = connection.execute(
-            "SELECT state_value FROM app_state WHERE state_key = ?",
-            ("cards",),
-        ).fetchone()
-        if existing is not None:
-            return
+    if load_cards():
+        return
 
     try:
         with open(LEGACY_CARDS_FILE, "r", encoding="utf-8") as legacy_file:
@@ -78,6 +105,24 @@ def migrate_legacy_cards_if_needed():
 
 
 def load_cards():
+    if USE_POSTGRES:
+        with get_pg_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT state_value FROM app_state WHERE state_key = %s",
+                    ("cards",),
+                )
+                row = cursor.fetchone()
+
+        if row is None:
+            return []
+
+        try:
+            parsed = json.loads(row[0])
+            return parsed if isinstance(parsed, list) else []
+        except json.JSONDecodeError:
+            return []
+
     with get_db_connection() as connection:
         row = connection.execute(
             "SELECT state_value FROM app_state WHERE state_key = ?",
@@ -96,6 +141,22 @@ def load_cards():
 
 def save_cards(cards):
     serialized_cards = json.dumps(cards, ensure_ascii=False)
+
+    if USE_POSTGRES:
+        with get_pg_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO app_state (state_key, state_value)
+                    VALUES (%s, %s)
+                    ON CONFLICT(state_key)
+                    DO UPDATE SET state_value = EXCLUDED.state_value
+                    """,
+                    ("cards", serialized_cards),
+                )
+            connection.commit()
+        return
+
     with get_db_connection() as connection:
         connection.execute(
             """
@@ -109,7 +170,7 @@ def save_cards(cards):
         connection.commit()
 
 
-init_db()
+    init_storage()
 migrate_legacy_cards_if_needed()
 
 
