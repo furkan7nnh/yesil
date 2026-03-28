@@ -11,11 +11,33 @@ DB_PATH = os.environ.get("CARDS_DB_PATH", os.path.join(DATA_DIR, "cards.db"))
 LEGACY_CARDS_FILE = os.path.join(BASE_DIR, "cards.json")
 
 
+def resolve_db_path():
+    candidate_path = DB_PATH
+    candidate_dir = os.path.dirname(candidate_path)
+    try:
+        if candidate_dir:
+            os.makedirs(candidate_dir, exist_ok=True)
+        with open(candidate_path, "a", encoding="utf-8"):
+            pass
+        return candidate_path
+    except OSError:
+        fallback_path = os.path.join(BASE_DIR, "cards.db")
+        fallback_dir = os.path.dirname(fallback_path)
+        if fallback_dir:
+            os.makedirs(fallback_dir, exist_ok=True)
+        with open(fallback_path, "a", encoding="utf-8"):
+            pass
+        return fallback_path
+
+
+RESOLVED_DB_PATH = resolve_db_path()
+
+
 def get_db_connection():
-    db_dir = os.path.dirname(DB_PATH)
+    db_dir = os.path.dirname(RESOLVED_DB_PATH)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
-    connection = sqlite3.connect(DB_PATH)
+    connection = sqlite3.connect(RESOLVED_DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
 
